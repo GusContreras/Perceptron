@@ -88,6 +88,9 @@ void MainWindow::clearData()
     clearError();
 
     ui->finalizo->clear();
+    ui->w_0->clear();
+    ui->w_1->clear();
+    ui->w_2->clear();
 
 }
 
