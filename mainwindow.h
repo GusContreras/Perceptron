@@ -34,6 +34,8 @@ private slots:
 
     void on_btnVerificar_clicked();
 
+    void on_btnAdaline_clicked();
+
 private:
 
     Ui::MainWindow *ui;

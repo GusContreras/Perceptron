@@ -27,8 +27,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->customPlot->graph(2)->setLineStyle(QCPGraph::lsLine);
 
     //setting range
-    ui->customPlot->xAxis->setRange(-10, 10);
-    ui->customPlot->yAxis->setRange(-10, 10);
+    ui->customPlot->xAxis->setRange(-5, 5);
+    ui->customPlot->yAxis->setRange(-5, 5);
 
     // error graph
     ui->errorPlot->addGraph();
@@ -38,6 +38,8 @@ MainWindow::MainWindow(QWidget *parent) :
     //initial factor and iterations
     ui->inputF->setText("0.5");
     ui->inputG->setText("100");
+    ui->inputE->setText("0.05");
+
 
     //initial flag
     flag = false;
@@ -134,7 +136,7 @@ void MainWindow::clickedGraph(QMouseEvent *event)
     if(!flag)
     {
         QPoint point = event->pos();
-        int Cl = -1;
+        double Cl = -1;
         if(event->buttons() == Qt::RightButton)
         {
             Cl = 0;
@@ -150,7 +152,7 @@ void MainWindow::clickedGraph(QMouseEvent *event)
     else
     {
         QPoint point = event->pos();
-        int Cl = -1;
+        double Cl = -1;
         double ejeX = ui->customPlot->xAxis->pixelToCoord(point.x());
         double ejeY = ui->customPlot->yAxis->pixelToCoord(point.y());
 
@@ -190,6 +192,7 @@ void MainWindow::plotError(){
 
 void MainWindow::on_btnCorrer_clicked()
 {
+    ui->finalizo->clear();
     clearError();
     QString fString = ui->inputF->text();
     QString GS = ui->inputG->text();
@@ -252,12 +255,12 @@ void MainWindow::on_btnCorrer_clicked()
     }
     if(done)
     {
-        QString respuesta = "Finalizo en " + QString::number(iteraciones) + " iteraciones";
+        QString respuesta = "Finalizó en " + QString::number(iteraciones) + " iteraciones";
         ui->finalizo->setText(respuesta);
     }
     else
     {
-        ui->finalizo->setText("El perceptron No convergio :( ");
+        ui->finalizo->setText("El perceptrón No convergió :( ");
     }
 
 }
@@ -277,4 +280,80 @@ void MainWindow::on_btnVerificar_clicked()
     {
         flag = true;
     }
+}
+
+void MainWindow::on_btnAdaline_clicked()
+{
+    ui->finalizo->clear();
+    clearError();
+    QString fString = ui->inputF->text();
+    QString GS = ui->inputG->text();
+    QString Dstring = ui->inputE->text();
+
+    double factor = fString.toDouble();
+    int G = GS.toInt();
+    double desired = Dstring.toDouble();
+
+    if(fString == "")
+    {
+        factor = 0.5;
+        ui->inputF->setText("0.5");
+    }
+    if(GS == "")
+    {
+        G = 100;
+        ui->inputG->setText("100");
+    }
+    if(Dstring == "")
+    {
+        desired = 0.05;
+    }
+
+
+    ui->errorPlot->xAxis->setRange(0,G);
+    int iteraciones;
+    double done = false;
+    double error;
+    double cont;
+
+    for(int r = 0; r < G; r++){
+
+        cont = 0.0;
+
+        for(int i=0; i < pointVector.size(); i++)
+        {
+            double s = percept.functionS(pointVector[i].x,pointVector[i].y);
+            error = pointVector[i].Class - s;
+            qDebug() << "x: " << pointVector[i].x << " y: " << pointVector[i].y << " w1: " << percept.w1
+                     << " w2: " << percept.w2 << " wb: " << percept.wb << " s: " << s << " e: " << error;
+            percept.updateA(pointVector[i],factor,error,s);
+            cont += error * error;
+        }
+
+        errorY.append(double(cont));
+        errorX.append(count);
+        count++;
+
+        drawLine();
+        plotError();
+        plot();
+
+        if(cont < desired)
+        {
+            done = true;
+            iteraciones = r;
+            break;
+        }
+    }
+    if(done)
+    {
+        QString respuesta = "Se alcanzó el error deseado en " + QString::number(iteraciones) + " iteraciones";
+        ui->finalizo->setText(respuesta);
+    }
+    else
+    {
+        QString respuesta = "El Adaline No alcanzó el error deseado, el error alcanzado es de: " + QString::number(cont);
+        ui->finalizo->setText(respuesta);
+    }
+
 }

@@ -5,7 +5,7 @@ Point::Point()
 
 }
 
-Point::Point(double i, double j, int cl)
+Point::Point(double i, double j, double cl)
 {
     x = i;
     y = j;
